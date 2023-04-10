@@ -1,6 +1,9 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import Square from "./Square.js";
 import EndGame from "./EndGame.js";
+import clickSound from "./Clicksound.wav";
+import winSound from "./winsound.wav";
+import drawSound from "./drawgamesound.wav";
 
 const X_PLAYER = "X";
 const O_PLAYER = "O";
@@ -43,6 +46,9 @@ const TicTacToe = ({
   const [gameFinished, setGameFinished] = useState(false);
   const [randomMove, setRandomMove] = useState(true);
   const [draw, setDraw] = useState(false);
+  const clickaudio = useMemo(() => new Audio(clickSound), [clickSound]);
+  const winaudio = useMemo(() => new Audio(winSound), [winSound]);
+  const drawaudio = useMemo(() => new Audio(drawSound), [drawSound]);
 
   useEffect(() => {
     if (prevFirstPlayer === X_PLAYER && gameFinished) {
@@ -60,6 +66,10 @@ const TicTacToe = ({
     setGridSize(gridSize);
     setPlayer(prevFirstPlayer);
     setRandomMove(!randomMove);
+    winaudio.pause();
+    winaudio.currentTime = 0;
+    drawaudio.pause()
+    drawaudio.currentTime = 0;
   };
 
   const handleClick = useCallback(
@@ -73,6 +83,7 @@ const TicTacToe = ({
         }
         setGrid(newGrid);
         setPlayer(player === X_PLAYER ? O_PLAYER : X_PLAYER);
+        clickaudio.play();
       }
     },
     [gameFinished, player, grid, INITIAL, setGrid]
@@ -84,16 +95,19 @@ const TicTacToe = ({
         const combination = winCombination[i];
         if (combination.every((index) => grid[index] === X_PLAYER)) {
           setGameFinished(true);
+          winaudio.play();
           return;
         }
         if (combination.every((index) => grid[index] === O_PLAYER)) {
           setGameFinished(true);
+          winaudio.play();
           return;
         }
       }
       if (!grid.includes(INITIAL)) {
         setDraw(true);
         setGameFinished(true);
+        drawaudio.play()
       }
     }
   };
